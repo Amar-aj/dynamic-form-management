@@ -1,0 +1,117 @@
+﻿@page "/master-scheme"
+@rendermode InteractiveServer
+@using BlazorAppDynamicFormGeneration.Models
+@using BlazorAppDynamicFormGeneration.Services
+@inject IJSRuntime JsRuntime
+@inject ISchemeService MasterSchemeService;
+<h3>MasterScheme</h3>
+
+@implements IDisposable
+
+<EditForm Model="schemeMaster" OnValidSubmit="HandleValidSubmit" FormName="schemeMasterForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <input type="hidden" @bind-value="schemeMaster.Id" />
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText class="form-control" @bind-Value="schemeMaster.Name" />
+    </div>
+
+    @if (schemeMaster.Id > 0)
+    {
+        <div class="form-check">
+            <InputCheckbox id="isActive" class="form-check-input" @bind-Value="schemeMaster.IsActive" />
+            <label class="form-check-label" for="isActive">Is Active</label>
+            <ValidationMessage For="@(() => schemeMaster.IsActive)" />
+        </div>
+    }
+
+    <div class="mt-4 form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</EditForm>
+
+<div class="mt-2">
+    <h3>All Schemes</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Is Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var scheme in allSchemes)
+            {
+                <tr>
+                    <td>@scheme.Id</td>
+                    <td>@scheme.Name</td>
+                    <td>@scheme.IsActive</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="() => EditScheme(scheme.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteScheme(scheme.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public SchemeMaster? schemeMaster { get; set; }
+
+    private List<SchemeMaster> allSchemes = new List<SchemeMaster>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        schemeMaster ??= new();
+        await LoadSchemes();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (schemeMaster.Id == 0)
+        {
+            await MasterSchemeService.InsertAsync(schemeMaster);
+        }
+        else
+        {
+            await MasterSchemeService.UpdateAsync(schemeMaster);
+        }
+
+        await LoadSchemes();
+        schemeMaster = new SchemeMaster();
+    }
+
+    private async Task LoadSchemes()
+    {
+        allSchemes = (await MasterSchemeService.GetAllAsync()).ToList();
+    }
+
+    async Task EditScheme(int id)
+    {
+        schemeMaster = await MasterSchemeService.GetByIdAsync(id);
+    }
+
+    private async Task DeleteScheme(int id)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            await MasterSchemeService.DeleteAsync(id);
+            await LoadSchemes();
+        }
+       
+    }
+
+    public void Dispose()
+    {
+        // Dispose resources if needed
+    }
+}

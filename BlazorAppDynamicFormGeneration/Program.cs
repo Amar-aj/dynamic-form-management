@@ -1,8 +1,15 @@
 using BlazorAppDynamicFormGeneration.Components;
+using BlazorAppDynamicFormGeneration.Data;
+using BlazorAppDynamicFormGeneration.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddSingleton<DapperDbContext>();
+builder.Services.AddScoped<ISchemeService, SchemeService>();
+
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
