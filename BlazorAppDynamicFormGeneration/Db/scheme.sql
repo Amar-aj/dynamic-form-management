@@ -39,8 +39,6 @@ END $$
 DELIMITER ;
 
 
-
-
 CREATE TABLE DynamicSchemeForm (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     SchemeId INT NOT NULL,
