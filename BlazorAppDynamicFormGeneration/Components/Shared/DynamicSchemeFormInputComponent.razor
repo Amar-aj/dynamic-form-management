@@ -1,0 +1,134 @@
+﻿@using BlazorAppDynamicFormGeneration.Models
+
+<div class="col-md-4 my-2">
+    <label>@DynamicFormData.FieldName</label>
+
+    @if (DynamicFormData.DataType == "text")
+    {
+        <input type="text" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" maxlength="@DynamicFormData.MaxLength" />
+    }
+    @if (DynamicFormData.DataType == "textarea")
+    {
+        <textarea type="text" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+    }
+    @if (DynamicFormData.DataType == "email")
+    {
+        <input type="email" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+    }
+    @if (DynamicFormData.DataType == "number")
+    {
+        <input type="number" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+    }
+    @if (DynamicFormData.DataType == "datetime")
+    {
+        <input type="datetime-local" class="form-control" @bind="dateTimeValue" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+    }
+    @if (DynamicFormData.DataType == "date")
+    {
+        <input type="date" class="form-control" @bind="dateValue" required="@DynamicFormData.IsRequired" />
+    }
+    @if (DynamicFormData.DataType == "time")
+    {
+        <input type="time" class="form-control" @bind="timeValue" required="@DynamicFormData.IsRequired" />
+    }
+
+    @if (DynamicFormData.DataType == "radio" && DynamicFormData.Options != null)
+    {
+        @foreach (var option in DynamicFormData.Options.Split(","))
+        {
+            <div>
+                <input type="radio" name="@DynamicFormData.FieldName" value="@option" @onchange="HandleRadioChange" checked="@(value == option)" />
+                <label>@option</label>
+            </div>
+        }
+    }
+    @if (DynamicFormData.DataType == "checkbox" && DynamicFormData.Options != null)
+    {
+        @foreach (var option in DynamicFormData.Options.Split(","))
+        {
+            <div>
+                <input type="checkbox" value="@option" @onchange="HandleCheckboxChange" checked="@selectedCheckboxes.Contains(option)" />
+                <label>@option</label>
+            </div>
+        }
+    }
+    @if (DynamicFormData.DataType == "select" && DynamicFormData.Options != null)
+    {
+        <select class="form-control" @bind="value" required="@DynamicFormData.IsRequired">
+            @foreach (var option in DynamicFormData.Options.Split(","))
+            {
+                <option value="@option">@option</option>
+            }
+        </select>
+    }
+</div>
+
+@code {
+
+
+    [Parameter]
+
+    public int Id { get; set; }
+    [Parameter]
+
+    public int SchemeId { get; set; }
+    [Parameter]
+
+    public EventCallback<List<DynamicSchemeForm>> DynamicSchemeDataEventCallback { get; set; }
+
+    [Parameter]
+
+    public EventCallback<string> DynamicInputValueEventCallback { get; set; }
+
+    [Parameter]
+    public DynamicSchemeForm DynamicFormData { get; set; }
+
+    private List<string> selectedCheckboxes = new List<string>();
+    private string value;
+    private DateTime? dateTimeValue;
+    private DateTime? dateValue;
+    private DateTime? timeValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        value = DynamicFormData.DefaultValue;
+
+        if (DynamicFormData.DataType == "datetime" && DateTime.TryParse(DynamicFormData.DefaultValue, out var dt))
+        {
+            dateTimeValue = dt;
+        }
+        else if (DynamicFormData.DataType == "date" && DateTime.TryParse(DynamicFormData.DefaultValue, out var d))
+        {
+            dateValue = d;
+        }
+        else if (DynamicFormData.DataType == "time" && DateTime.TryParse(DynamicFormData.DefaultValue, out var t))
+        {
+            timeValue = t;
+        }
+
+        View();
+    }
+
+    private void View()
+    {
+
+    }
+
+    private void HandleRadioChange(ChangeEventArgs e)
+    {
+        value = e.Value?.ToString();
+    }
+
+    private void HandleCheckboxChange(ChangeEventArgs e)
+    {
+        var checkboxValue = e.Value?.ToString();
+        if (selectedCheckboxes.Contains(checkboxValue))
+        {
+            selectedCheckboxes.Remove(checkboxValue);
+        }
+        else
+        {
+            selectedCheckboxes.Add(checkboxValue);
+        }
+    }
+}

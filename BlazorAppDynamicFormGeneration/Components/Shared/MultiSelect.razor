@@ -1,0 +1,108 @@
+﻿@using System.Collections.Generic
+<style>
+
+    .multi-select-container {
+        display: flex;
+        flex-wrap: wrap;
+        border: 1px solid #ccc;
+        padding: 5px;
+        border-radius: 4px;
+    }
+
+    .selected-item {
+        background-color: #007bff;
+        color: white;
+        padding: 5px 10px;
+        margin: 2px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+    }
+
+        .selected-item .remove-item {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+    input[type="text"] {
+        border: none;
+        outline: none;
+        flex-grow: 1;
+        min-width: 100px;
+    }
+</style>
+<div class="multi-select-container">
+    @foreach (var item in SelectedItems)
+    {
+        <span class="selected-item">
+            @item.Value
+            <button type="button" class="remove-item" @onclick="() => RemoveItem(item)">×</button>
+        </span>
+    }
+    <input type="text" @bind="currentInput" @bind:event="oninput" @onkeydown="HandleKeyDown" list="datalistOptions" placeholder="Add item..." />
+    <datalist id="datalistOptions">
+        <!-- No predefined options needed -->
+    </datalist>
+</div>
+
+@code {
+    private string currentInput = string.Empty;
+    private List<SelectedItem> SelectedItems { get; set; } = new List<SelectedItem>();
+
+    private string SelectedItemsString => string.Join(", ", SelectedItems.Select(item => item.Value));
+
+    [Parameter]
+    public EventCallback<string> SelectedItemsStringChanged { get; set; }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(currentInput))
+        {
+            AddItem(currentInput);
+        }
+        else if (e.Key == "Backspace" && string.IsNullOrEmpty(currentInput) && SelectedItems.Any())
+        {
+            RemoveLastItem();
+        }
+    }
+
+    private async Task AddItem(string value)
+    {
+        if (!SelectedItems.Any(item => item.Value.Equals(value, StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedItems.Add(new SelectedItem { Value = value });
+            await NotifySelectedItemsStringChanged();
+        }
+        currentInput = string.Empty;
+    }
+
+    private async Task RemoveItem(SelectedItem item)
+    {
+        SelectedItems.Remove(item);
+        await NotifySelectedItemsStringChanged();
+    }
+
+    private async Task RemoveLastItem()
+    {
+        if (SelectedItems.Any())
+        {
+            SelectedItems.RemoveAt(SelectedItems.Count - 1);
+            await NotifySelectedItemsStringChanged();
+        }
+    }
+
+
+    private async Task NotifySelectedItemsStringChanged()
+    {
+        await SelectedItemsStringChanged.InvokeAsync(SelectedItemsString);
+    }
+
+    public class SelectedItem
+    {
+        public string Value { get; set; }
+    }
+
+}

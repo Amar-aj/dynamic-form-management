@@ -1,4 +1,4 @@
-﻿@page "/scheme-form"
+﻿@page "/scheme-display"
 
 @rendermode InteractiveServer
 @using BlazorAppDynamicFormGeneration.Components.Shared
@@ -15,8 +15,8 @@
     <div class="row">
         <div class="col-md-12">
             <label>Scheme</label>
-            <select class="form-control" @bind="SchemeId">
-                <option value="">Select a scheme</option>
+            <select class="form-control" @onchange="OnChangeScheme">
+                <option value="0">Select a scheme</option>
                 @foreach (var scheme in allSchemes)
                 {
                     <option value="@scheme.Id">@scheme.Name</option>
@@ -25,40 +25,19 @@
         </div>
     </div>
 </div>
-
-@if (SchemeId != 0)
+@if (allDynamicSchemes.Any())
 {
-    <DynamicSchemeFormComponent SchemeId="SchemeId" DynamicSchemeDataEventCallback="GetDataFromChild" />
+    <form>
+        @foreach (var item in allDynamicSchemes.OrderBy(x => x.PositionOnTab))
+        {
+            <DynamicSchemeFormInputComponent DynamicFormData="item" />
+        }
+
+        <input type="submit" value="Save" />
+    </form>
+   
 }
 
-
-<div class="mt-2">
-    <h3>All Dynamic Schemes Form</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Is Active</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var scheme in allDynamicSchemes)
-            {
-                <tr>
-                    <td>@scheme.Id</td>
-                    <td>@scheme.FieldName</td>
-                    <td>@scheme.IsActive</td>
-                    <td>
-                        <button class="btn btn-warning" @onclick="() => EditScheme(scheme.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteScheme(scheme.Id)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
 
 @code {
     int SchemeId = 0;
@@ -98,12 +77,20 @@
 
     private async Task LoadData()
     {
-        allDynamicSchemes = (await _service.GetAllAsync()).ToList();
+        // allDynamicSchemes = (await _service.GetAllAsync()).ToList();
         allSchemes = (await MasterSchemeService.GetAllAsync()).ToList();
     }
 
     async Task EditScheme(int id)
     {
+        // model = await _service.GetByIdAsync(id);
+    }
+    async Task OnChangeScheme(ChangeEventArgs e)
+    {
+        SchemeId = int.Parse(e.Value.ToString());
+        Console.WriteLine("It is definitely: " + SchemeId);
+        allDynamicSchemes = (await _service.GetSchemeWiseFormAsync(SchemeId)).ToList();
+
         // model = await _service.GetByIdAsync(id);
     }
 

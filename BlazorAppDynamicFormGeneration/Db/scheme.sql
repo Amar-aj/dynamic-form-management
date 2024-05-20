@@ -56,10 +56,13 @@ CREATE TABLE DynamicSchemeForm (
 );
 
 
+
+DROP PROCEDURE IF EXISTS sp_CrudDynamicSchemeForm;
+
 DELIMITER $$
 
 CREATE PROCEDURE sp_CrudDynamicSchemeForm(
-    IN p_ActionType VARCHAR(10),
+    IN p_ActionType VARCHAR(20),
     IN p_Id INT,
     IN p_SchemeId INT,
     IN p_FieldName VARCHAR(255),
@@ -72,6 +75,7 @@ CREATE PROCEDURE sp_CrudDynamicSchemeForm(
     IN p_DefaultValue VARCHAR(255),
     IN p_MaxLength INT,
     IN p_IsRequired BOOLEAN,
+
     IN p_IsActive BOOLEAN
 )
 BEGIN
@@ -103,10 +107,15 @@ BEGIN
         SELECT * FROM DynamicSchemeForm
         WHERE Id = p_Id;
 
+    ELSEIF p_ActionType = 'GETBY_SCHEME_ID' THEN
+        SELECT * FROM DynamicSchemeForm
+        WHERE SchemeId = p_SchemeId AND IsActive=TRUE;
+
     ELSEIF p_ActionType = 'GETALL' THEN
         SELECT * FROM DynamicSchemeForm;
 
     END IF;
-END$$
+END
+$$
 
 DELIMITER ;

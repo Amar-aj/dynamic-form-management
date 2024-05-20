@@ -57,10 +57,22 @@
                     <label>Position</label>
                     <InputNumber class="form-control" @bind-Value="formData.PositionOnTab" />
                 </div>
-                <div class="col-md-4">
+              @*   <div class="col-md-4">
                     <label>Options</label>
                     <InputText class="form-control" @bind-Value="formData.Options" />
-                </div>
+                </div> *@
+
+                @if (formData.DataType == "radio" || formData.DataType == "checkbox" || formData.DataType == "select")
+                {
+                    formData.Options = selectedItemsString;
+                    <div class="col-md-4">
+                        <label>Options</label>
+                        @*  <p>Selected Items String: @selectedItemsString</p> *@
+                       @*  <p>Selected Items String: @formData.Options</p> *@
+                        <MultiSelect SelectedItemsStringChanged="OnSelectedItemsStringChanged" />
+                    </div>
+                }
+               
                 <div class="col-md-4">
                     <label>Place Holder</label>
                     <InputText class="form-control" @bind-Value="formData.PlaceHolder" />
@@ -101,9 +113,12 @@
 </button>
 
 
+<div class="row">
+    <div class="mt-4 d-flex align-items-end justify-content-end">
+        <button type="button" class="btn btn-success" @onclick="() => SendDataToParent()">Save</button>
+    </div>
+</div>
 
-
-<button type="button" class="btn btn-secondary" @onclick="() => SendDataToParent()">Save</button>
 
 @code {
     [Parameter]
@@ -115,6 +130,15 @@
 
 
     public List<DynamicSchemeForm> dynamicSchemeData = new List<DynamicSchemeForm>();
+   
+    private string selectedItemsString;
+
+    private void OnSelectedItemsStringChanged(string newSelectedItemsString)
+    {
+        selectedItemsString = newSelectedItemsString;
+        
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,7 +152,7 @@
                 SchemeId = SchemeId,
                 FieldName = "",
                 DataType = "",
-                MaxLength = 100,
+                MaxLength = 20,
                 TabName = "",
                 PositionOnTab = dynamicSchemeData.Count,
                 Options = "",

@@ -11,6 +11,7 @@ public interface IDynamicSchemeFormService
     Task<int> UpdateAsync(DynamicSchemeForm obj);
     Task<DynamicSchemeForm> GetByIdAsync(int id);
     Task<List<DynamicSchemeForm>> GetAllAsync();
+    Task<List<DynamicSchemeForm>> GetSchemeWiseFormAsync(int schemeId);
     Task<int> DeleteAsync(int id);
 }
 public class DynamicSchemeFormService(DapperDbContext _context) : IDynamicSchemeFormService
@@ -100,4 +101,27 @@ public class DynamicSchemeFormService(DapperDbContext _context) : IDynamicScheme
         throw new NotImplementedException();
     }
 
+    public async Task<List<DynamicSchemeForm>> GetSchemeWiseFormAsync(int schemeId)
+    {
+        using (IDbConnection db = _context.CreateConnection())
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("p_ActionType", "GETBY_SCHEME_ID");
+            parameters.Add("p_Id", 0);
+            parameters.Add("p_SchemeId", schemeId);
+            parameters.Add("p_FieldName", string.Empty);
+            parameters.Add("p_DataType", string.Empty);
+            parameters.Add("p_TabName", string.Empty);
+            parameters.Add("p_GroupName", string.Empty);
+            parameters.Add("p_PositionOnTab", 0);
+            parameters.Add("p_Options", string.Empty);
+            parameters.Add("p_PlaceHolder", string.Empty);
+            parameters.Add("p_DefaultValue", string.Empty);
+            parameters.Add("p_MaxLength", 0);
+            parameters.Add("p_IsRequired", false);
+            parameters.Add("p_IsActive", false);
+            var data = await db.QueryAsync<DynamicSchemeForm>("sp_CrudDynamicSchemeForm", parameters, commandType: CommandType.StoredProcedure);
+            return data.AsList();
+        }
+    }
 }
