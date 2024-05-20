@@ -1,0 +1,136 @@
+﻿@page "/scheme-form"
+
+@rendermode InteractiveServer
+@using BlazorAppDynamicFormGeneration.Components.Shared
+@using BlazorAppDynamicFormGeneration.Models
+@using BlazorAppDynamicFormGeneration.Services
+@inject IJSRuntime JsRuntime
+@inject IDynamicSchemeFormService _service;
+@inject ISchemeService MasterSchemeService;
+<h3>Dynamic Scheme Form</h3>
+
+@implements IDisposable
+
+<div class="form-group">
+    <div class="row">
+        <div class="col-md-12">
+            <label>Scheme</label>
+            <select class="form-control" @bind="SchemeId">
+                <option value="">Select a scheme</option>
+                @foreach (var scheme in allSchemes)
+                {
+                    <option value="@scheme.Id">@scheme.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (SchemeId != 0)
+{
+    <DynamicSchemeFormComponent SchemeId="SchemeId" DynamicSchemeDataEventCallback="GetDataFromChild" />
+}
+
+
+<p>
+    @foreach (var item in allDynamicSchemesFromChild)
+    {
+    <p>@item.FieldName</p>
+    }
+
+</p>
+
+
+
+<div class="mt-2">
+    <h3>All Dynamic Schemes Form</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                @*   <th>Name</th> *@
+                <th>Is Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var scheme in allDynamicSchemes)
+            {
+                <tr>
+                    <td>@scheme.Id</td>
+                    @*  <td>@scheme.Name</td> *@
+                    <td>@scheme.IsActive</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="() => EditScheme(scheme.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteScheme(scheme.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    int SchemeId = 0;
+    private List<DynamicSchemeForm> allDynamicSchemes = new List<DynamicSchemeForm>();
+    private List<DynamicSchemeForm> allDynamicSchemesFromChild = new List<DynamicSchemeForm>();
+    private List<SchemeMaster> allSchemes = new List<SchemeMaster>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    public async Task GetDataFromChild(List<DynamicSchemeForm> dynamicSchemeForms)
+    {
+        allDynamicSchemesFromChild = new List<DynamicSchemeForm>();
+        allDynamicSchemesFromChild = dynamicSchemeForms;
+
+        foreach (var item in allDynamicSchemesFromChild)
+        {
+            await _service.InsertAsync(item);
+        }
+
+
+    }
+    private async Task HandleValidSubmit()
+    {
+        // if (model.Id == 0)
+        // {
+        //     await _service.InsertAsync(model);
+        // }
+        // else
+        // {
+        //     await _service.UpdateAsync(model);
+        // }
+
+        await LoadData();
+        // model = new DynamicSchemeForm();
+    }
+
+    private async Task LoadData()
+    {
+        allDynamicSchemes = (await _service.GetAllAsync()).ToList();
+        allSchemes = (await MasterSchemeService.GetAllAsync()).ToList();
+    }
+
+    async Task EditScheme(int id)
+    {
+        // model = await _service.GetByIdAsync(id);
+    }
+
+    private async Task DeleteScheme(int id)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            await _service.DeleteAsync(id);
+            await LoadData();
+        }
+
+    }
+
+    public void Dispose()
+    {
+        // Dispose resources if needed
+    }
+}

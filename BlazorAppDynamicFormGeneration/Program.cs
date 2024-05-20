@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<DapperDbContext>();
 builder.Services.AddScoped<ISchemeService, SchemeService>();
+builder.Services.AddScoped<IDynamicSchemeFormService, DynamicSchemeFormService>();
 
 
 builder.Services.AddRazorComponents()

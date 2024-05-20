@@ -1,0 +1,173 @@
+﻿@using BlazorAppDynamicFormGeneration.Models
+
+
+
+@if (dynamicSchemeData.Any())
+{
+    @for (int i = 0; i < dynamicSchemeData.Count; i++)
+    {
+        int index = i;
+        var formData = dynamicSchemeData[i];  // Access current element
+
+        @*    <EditForm Model="formData" OnValidSubmit="HandleValidSubmit"
+                  FormName="@($"schemeMasterForm-{i}")">
+            <DataAnnotationsValidator />
+            <ValidationSummary /> *@
+
+        <input type="hidden" @bind-value="formData.Id" />
+
+
+        <div class="form-group mt-2">
+            <div class="row">
+
+                <div class="col-md-4">
+                    <label>Field Name</label>
+                    <InputText class="form-control" @bind-Value="formData.FieldName" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Data Type</label>
+                    <select class="form-control" @bind="formData.DataType">
+                        <option value="">Select a Datatype</option>
+                        <option value="text">Text</option>
+                        <option value="textarea">Text Area</option>
+                        <option value="email">Email</option>
+                        <option value="number">Number</option>
+                        <option value="datetime">Date & Time</option>
+                        <option value="date">Date</option>
+                        <option value="time">Time</option>
+                        <option value="radio">Radio</option>
+                        <option value="checkbox">Checkbox</option>
+                        <option value="select">Select</option>
+                        <option value="pdf">PDF</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>Max Length</label>
+                    <InputNumber class="form-control" @bind-Value="formData.MaxLength" />
+                </div>
+                <div class="col-md-4">
+                    <label>Tab Name</label>
+                    <InputText class="form-control" @bind-Value="formData.TabName" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Position</label>
+                    <InputNumber class="form-control" @bind-Value="formData.PositionOnTab" />
+                </div>
+                <div class="col-md-4">
+                    <label>Options</label>
+                    <InputText class="form-control" @bind-Value="formData.Options" />
+                </div>
+                <div class="col-md-4">
+                    <label>Place Holder</label>
+                    <InputText class="form-control" @bind-Value="formData.PlaceHolder" />
+                </div>
+                <div class="col-md-4">
+                    <label>Default Value</label>
+                    <InputText class="form-control" @bind-Value="formData.DefaultValue" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Required Type</label>
+                    <InputCheckbox class="form-check-input" @bind-Value="formData.IsRequired" />
+                </div>
+                <div class="col-md-4">
+                    <label>Is Active</label>
+                    <InputCheckbox class="form-check-input" @bind-Value="formData.IsActive" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="mt-4 d-flex align-items-end justify-content-end">
+                <button @onclick="(() => Remove(index))" class="btn btn-danger">Remove</button>
+            </div>
+        </div>
+
+        @*             <div class="mt-4 form-group">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </EditForm> *@
+    }
+
+}
+
+
+<hr />
+<button @onclick="Add" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add
+</button>
+
+
+
+
+<button type="button" class="btn btn-secondary" @onclick="() => SendDataToParent()">Save</button>
+
+@code {
+    [Parameter]
+    public int SchemeId { get; set; }
+
+    [Parameter]
+
+    public EventCallback<List<DynamicSchemeForm>> DynamicSchemeDataEventCallback { get; set; }
+
+
+    public List<DynamicSchemeForm> dynamicSchemeData = new List<DynamicSchemeForm>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Add();
+    }
+
+    private void Add()
+    {
+        var formData = new DynamicSchemeForm
+            {
+                SchemeId = SchemeId,
+                FieldName = "",
+                DataType = "",
+                MaxLength = 100,
+                TabName = "",
+                PositionOnTab = dynamicSchemeData.Count,
+                Options = "",
+                PlaceHolder = "",
+                DefaultValue = "",
+                IsRequired = false,
+                IsActive = true
+            };
+
+        dynamicSchemeData.Add(formData);
+    }
+
+    private void Remove(int id)
+    {
+        dynamicSchemeData.RemoveAt(id);
+    }
+
+    public void SendDataToParent()
+    {
+        DynamicSchemeDataEventCallback.InvokeAsync(dynamicSchemeData);
+
+
+
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        foreach (var form in dynamicSchemeData)
+        {
+            if (form.Id == 0)
+            {
+                // Insert logic here
+                // await _service.InsertAsync(form);
+            }
+            else
+            {
+                // Update logic here
+                // await _service.UpdateAsync(form);
+            }
+        }
+    }
+}
