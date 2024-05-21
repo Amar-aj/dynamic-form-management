@@ -5,31 +5,31 @@
 
     @if (DynamicFormData.DataType == "text")
     {
-        <input type="text" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" maxlength="@DynamicFormData.MaxLength" />
+        <input type="text" class="form-control" @bind="DynamicFormData.Value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" maxlength="@DynamicFormData.MaxLength" />
     }
     @if (DynamicFormData.DataType == "textarea")
     {
-        <textarea type="text" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+        <textarea type="text" class="form-control" @bind="DynamicFormData.Value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
     }
     @if (DynamicFormData.DataType == "email")
     {
-        <input type="email" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+        <input type="email" class="form-control" @bind="DynamicFormData.Value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
     }
     @if (DynamicFormData.DataType == "number")
     {
-        <input type="number" class="form-control" @bind="value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+        <input type="number" class="form-control" @bind="DynamicFormData.Value" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
     }
     @if (DynamicFormData.DataType == "datetime")
     {
-        <input type="datetime-local" class="form-control" @bind="dateTimeValue" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
+        <input type="datetime-local" class="form-control" @onchange="HandleDateTimeChange" required="@DynamicFormData.IsRequired" placeholder="@DynamicFormData.PlaceHolder" />
     }
     @if (DynamicFormData.DataType == "date")
     {
-        <input type="date" class="form-control" @bind="dateValue" required="@DynamicFormData.IsRequired" />
+        <input type="date" class="form-control" @onchange="HandleDateChange" required="@DynamicFormData.IsRequired" />
     }
     @if (DynamicFormData.DataType == "time")
     {
-        <input type="time" class="form-control" @bind="timeValue" required="@DynamicFormData.IsRequired" />
+        <input type="time" class="form-control" @onchange="HandleTimeChange" required="@DynamicFormData.IsRequired" />
     }
 
     @if (DynamicFormData.DataType == "radio" && DynamicFormData.Options != null)
@@ -37,7 +37,7 @@
         @foreach (var option in DynamicFormData.Options.Split(","))
         {
             <div>
-                <input type="radio" name="@DynamicFormData.FieldName" value="@option" @onchange="HandleRadioChange" checked="@(value == option)" />
+                <input type="radio" name="@DynamicFormData.FieldName" value="@option" @onchange="HandleRadioChange" checked="@(DynamicFormData.Value == option)" />
                 <label>@option</label>
             </div>
         }
@@ -47,14 +47,14 @@
         @foreach (var option in DynamicFormData.Options.Split(","))
         {
             <div>
-                <input type="checkbox" value="@option" @onchange="HandleCheckboxChange" checked="@selectedCheckboxes.Contains(option)" />
+                <input type="checkbox" value="@option" @onchange="@(e => HandleCheckboxChange(e, option))" checked="@selectedCheckboxes.Contains(option)" />
                 <label>@option</label>
             </div>
         }
     }
     @if (DynamicFormData.DataType == "select" && DynamicFormData.Options != null)
     {
-        <select class="form-control" @bind="value" required="@DynamicFormData.IsRequired">
+        <select class="form-control" @bind="DynamicFormData.Value" required="@DynamicFormData.IsRequired">
             @foreach (var option in DynamicFormData.Options.Split(","))
             {
                 <option value="@option">@option</option>
@@ -72,9 +72,9 @@
     [Parameter]
 
     public int SchemeId { get; set; }
-    [Parameter]
+    // [Parameter]
 
-    public EventCallback<List<DynamicSchemeForm>> DynamicSchemeDataEventCallback { get; set; }
+    // public EventCallback<List<DynamicSchemeForm>> DynamicSchemeDataEventCallback { get; set; }
 
     [Parameter]
 
@@ -84,27 +84,27 @@
     public DynamicSchemeForm DynamicFormData { get; set; }
 
     private List<string> selectedCheckboxes = new List<string>();
-    private string value;
-    private DateTime? dateTimeValue;
-    private DateTime? dateValue;
-    private DateTime? timeValue;
+    // private string value;
+    // private DateTime? dateTimeValue;
+    // private DateTime? dateValue;
+    // private DateTime? timeValue;
 
     protected override async Task OnInitializedAsync()
     {
-        value = DynamicFormData.DefaultValue;
+        DynamicFormData.Value = DynamicFormData.DefaultValue;
 
-        if (DynamicFormData.DataType == "datetime" && DateTime.TryParse(DynamicFormData.DefaultValue, out var dt))
-        {
-            dateTimeValue = dt;
-        }
-        else if (DynamicFormData.DataType == "date" && DateTime.TryParse(DynamicFormData.DefaultValue, out var d))
-        {
-            dateValue = d;
-        }
-        else if (DynamicFormData.DataType == "time" && DateTime.TryParse(DynamicFormData.DefaultValue, out var t))
-        {
-            timeValue = t;
-        }
+        // if (DynamicFormData.DataType == "datetime" && DateTime.TryParse(DynamicFormData.DefaultValue, out var dt))
+        // {
+        //     dateTimeValue = dt;
+        // }
+        // else if (DynamicFormData.DataType == "date" && DateTime.TryParse(DynamicFormData.DefaultValue, out var d))
+        // {
+        //     dateValue = d;
+        // }
+        // else if (DynamicFormData.DataType == "time" && DateTime.TryParse(DynamicFormData.DefaultValue, out var t))
+        // {
+        //     timeValue = t;
+        // }
 
         View();
     }
@@ -114,14 +114,35 @@
 
     }
 
-    private void HandleRadioChange(ChangeEventArgs e)
+    private async Task HandleDateTimeChange(ChangeEventArgs e)
     {
-        value = e.Value?.ToString();
+        // dateTimeValue = DateTime.Parse(e.Value.ToString());
+        DynamicFormData.Value = e.Value.ToString();
+        await DynamicInputValueEventCallback.InvokeAsync(DynamicFormData.Value);
     }
 
-    private void HandleCheckboxChange(ChangeEventArgs e)
+    private async Task HandleDateChange(ChangeEventArgs e)
     {
-        var checkboxValue = e.Value?.ToString();
+        // dateValue = DateTime.Parse(e.Value.ToString());
+        DynamicFormData.Value = e.Value.ToString();
+        await DynamicInputValueEventCallback.InvokeAsync(DynamicFormData.Value);
+    }
+
+    private async Task HandleTimeChange(ChangeEventArgs e)
+    {
+        // timeValue = DateTime.Parse(e.Value.ToString());
+        DynamicFormData.Value = e.Value.ToString();
+        await DynamicInputValueEventCallback.InvokeAsync(DynamicFormData.Value);
+    }
+
+    private void HandleRadioChange(ChangeEventArgs e)
+    {
+        DynamicFormData.Value = e.Value?.ToString();
+    }
+
+    private async Task HandleCheckboxChange(ChangeEventArgs e, string options)
+    {
+        var checkboxValue = options;
         if (selectedCheckboxes.Contains(checkboxValue))
         {
             selectedCheckboxes.Remove(checkboxValue);
@@ -130,5 +151,7 @@
         {
             selectedCheckboxes.Add(checkboxValue);
         }
+        DynamicFormData.Value = string.Join(",", selectedCheckboxes);
+        await DynamicInputValueEventCallback.InvokeAsync(DynamicFormData.Value);
     }
 }

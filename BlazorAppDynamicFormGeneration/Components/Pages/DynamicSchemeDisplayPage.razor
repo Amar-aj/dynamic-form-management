@@ -4,6 +4,7 @@
 @using BlazorAppDynamicFormGeneration.Components.Shared
 @using BlazorAppDynamicFormGeneration.Models
 @using BlazorAppDynamicFormGeneration.Services
+@using Newtonsoft.Json
 @inject IJSRuntime JsRuntime
 @inject IDynamicSchemeFormService _service;
 @inject ISchemeService MasterSchemeService;
@@ -27,7 +28,9 @@
 </div>
 @if (allDynamicSchemes.Any())
 {
-    <form>
+
+    <form @onsubmit="HandleValidSubmit">
+
         @foreach (var item in allDynamicSchemes.OrderBy(x => x.PositionOnTab))
         {
             <DynamicSchemeFormInputComponent DynamicFormData="item" />
@@ -35,7 +38,7 @@
 
         <input type="submit" value="Save" />
     </form>
-   
+
 }
 
 
@@ -62,6 +65,7 @@
     }
     private async Task HandleValidSubmit()
     {
+        Console.WriteLine(JsonConvert.SerializeObject(allDynamicSchemes));
         // if (model.Id == 0)
         // {
         //     await _service.InsertAsync(model);

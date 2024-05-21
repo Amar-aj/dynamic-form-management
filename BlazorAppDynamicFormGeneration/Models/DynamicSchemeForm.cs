@@ -15,4 +15,6 @@ public class DynamicSchemeForm
     public int MaxLength { get; set; }
     public bool IsRequired { get; set; }
     public bool IsActive { get; set; } = true;
+
+    public string Value { get; set; }
 }
